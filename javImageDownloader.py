@@ -15,31 +15,27 @@ def getInfo(frontname):
     }
     mainUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?keyword="+frontname
     response = requests.get(mainUrl,proxies=proxies, headers = headers)
-    # 查看响应内容,response.text返回的是Unicode格式的数据
-    #print(response.text)
 
     soup = BeautifulSoup(response.text,'lxml')
     global stateCode
-    #获取标题
     global videoTitle
     videoTitle = soup.find_all(re.compile("a"),limit=28)
-    #name=videoTitle[27].string
-    #print(videoTitle[27].string)
-    #print(videoTitle[27].text)
+
     if videoTitle[27].get('title') == "我想要" :
-        print("?-查询成功:"+frontname+"存在多个返回结果，请手动处理")
+        print('-! ! ! ! ! ! ! ! ! ! ! ! ! ! !')
+        print("-查询成功:"+frontname+"存在多个返回结果，请手动处理")
         stateCode = 1
         return
     if videoTitle[27].string == "tt-01sd3" :
-        print("×-查询失败:"+frontname+"是错误的番号，请手动处理")
+        print('-! ! ! ! ! ! ! ! ! ! ! ! ! ! !')
+        print("-查询失败:"+frontname+"是错误的番号，请手动处理")
         stateCode = 2
         return
     else:
-        #获取封面地址
         global pic
         stateCode = 0
         try:
-            print("√-查询成功:"+frontname)
+            print("-查询成功:"+frontname)
             pic = soup.find('img',id="video_jacket_img")
             #print(pic.get('src'))
         except Exception as e:
@@ -62,16 +58,17 @@ def downloadImage(name,url):
         req = requests.get(jpgUrl, timeout=10)
             #print("正在从"+fileurl+"下载")
         if req.status_code != 200:
-            print('×--下载异常')
+            print('-下载异常')
             return
         try:
             if (os.path.exists(jpgName)==True):
-                print('封面已存在，跳过下载')
+                print('-封面存在，跳过下载')
             if (os.path.exists(jpgName)==False):    
                 with open(jpgName, 'wb') as f:
                     #req.content为获取html的内容
                     f.write(req.content)
-                    print('√--下载成功:'+jpgName)
+                    print('-下载成功:'+jpgName[:48]+(jpgName[48:] and  '...'))
+                    #print('-下载成功:'+jpgName)
         except Exception as e:
             print(e)
 
@@ -85,33 +82,34 @@ stateCode = 0 # 0-状态正常 1-多个返回结果 2-不存在搜索结果
 path=os.getcwd() #获取当前文件夹路径
 fileList=os.listdir(path) #获取当前目录下文件列表
 
-
+'''
 #####测试用代码块#####
-fileName="stars-456.mp4"
+fileName="stars-461.mp4"
 frontName=os.path.splitext(fileName)[0]
 #print(frontName)
 backNmae=os.path.splitext(fileName)[1]
 #print(backNmae)
 ctcStart=time.time()
+print('------------------------------')
 getInfo(frontName)
 if stateCode == 0 :
     downloadImage(videoTitle[27].string,pic.get('src'))
 ctcEnd=time.time()
-print("耗时{:.2f}秒".format(ctcEnd-ctcStart))
+print("-耗    时:{:.2f}秒".format(ctcEnd-ctcStart))
 ####################
-
-
-
 '''
+
+
+
 for fileName in fileList:
     frontName=os.path.splitext(fileName)[0]
     #print(frontName)
     backNmae=os.path.splitext(fileName)[1]
     #print(backNmae)
     ctcStart=time.time()
+    print('------------------------------')
     getInfo(frontName)
     if stateCode == 0 :
         downloadImage(videoTitle[27].string,pic.get('src'))
     ctcEnd=time.time()
-    print("!---耗时:{:.2f}秒".format(ctcEnd-ctcStart))
-'''
+    print("-耗    时:{:.2f}秒".format(ctcEnd-ctcStart))

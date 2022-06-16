@@ -1,3 +1,4 @@
+#version:0.1.1
 import  requests
 from bs4 import BeautifulSoup
 import re   
@@ -56,31 +57,26 @@ def downloadImage(name,url):
     else :
         fileurl="https:"+str(url)
     filename=str(name)+".jpg"
-    req = requests.get(fileurl)
-    #print("正在从"+fileurl+"下载")
-    if req.status_code != 200:
-        print('×--下载异常')
-        return
+    
     try:
-        with open(filename, 'wb') as f:
-            #req.content为获取html的内容
-            f.write(req.content)
-            print('√--下载成功:'+filename)
-    except Exception as e:
+        req = requests.get(fileurl, timeout=10)
+            #print("正在从"+fileurl+"下载")
+        if req.status_code != 200:
+            print('×--下载异常')
+            return
+        try:
+            with open(filename, 'wb') as f:
+                #req.content为获取html的内容
+                f.write(req.content)
+                print('√--下载成功:'+filename)
+        except Exception as e:
+            print(e)
+
+    except requests.exceptions.RequestException as e:
         print(e)
 
-'''
-#测试用代码块
-###
-id="stars-451"
-ctcStart=time.time()
-getInfo(id)
-if stateCode == 0 :
-    downloadImage(title[27].string,pic.get('src'))
-ctcEnd=time.time()
-print("耗时{:.2f}秒".format(ctcEnd-ctcStart))
-###
-'''
+
+
 
 stateCode = 0 # 0-状态正常 1-多个返回结果 2-不存在搜索结果
 
@@ -89,6 +85,26 @@ fileList=os.listdir(path) #获取当前目录下文件列表
 #fileNumber=len(fileList)
 
 
+#####测试用代码块#####
+id="stars-451"
+ctcStart=time.time()
+getInfo(id)
+if stateCode == 0 :
+    downloadImage(title[27].string,pic.get('src'))
+ctcEnd=time.time()
+print("耗时{:.2f}秒".format(ctcEnd-ctcStart))
+id="rki-111"
+ctcStart=time.time()
+getInfo(id)
+if stateCode == 0 :
+    downloadImage(title[27].string,pic.get('src'))
+ctcEnd=time.time()
+print("耗时{:.2f}秒".format(ctcEnd-ctcStart))
+####################
+
+
+
+'''
 for file in fileList:
     id=os.path.splitext(file)[0]
     #print(id)
@@ -98,3 +114,4 @@ for file in fileList:
         downloadImage(title[27].string,pic.get('src'))
     ctcEnd=time.time()
     print("!---耗时:{:.2f}秒".format(ctcEnd-ctcStart))
+'''

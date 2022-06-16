@@ -1,1 +1,2 @@
 # JavCoverDownloader
+根据文件名番号搜索标题并下载专辑封面到本地

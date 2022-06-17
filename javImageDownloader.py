@@ -10,7 +10,9 @@ def getInfo(frontname):
     global headers
     #网站需要挂代理
     global proxies
-    mainUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?keyword="+frontname
+    #mainUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?keyword="+frontname
+    #切换至列表模式搜索地址，便于查找结果
+    mainUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?list&keyword="+frontname
     response = requests.get(mainUrl,proxies = proxies, headers = headers)
 
     soup = BeautifulSoup(response.text,'lxml')
@@ -18,12 +20,23 @@ def getInfo(frontname):
     global videoTitle
     videoTitle = soup.find_all(re.compile("a"),limit=28)
 
-    if videoTitle[27].get('title') == "我想要" :
+    if soup.find_all('a')[14].string == "缩图模式" :
         print('-! ! ! ! ! ! ! ! ! ! ! ! ! ! !')
         print("-查询成功:"+frontname+"存在多个返回结果，请手动处理")
         #print(soup.prettify())
+        #print(soup.find_all('a'))
+        #for a in soup.find_all('a'):
+        for a in soup.select('a[href][title]'):
+            print(a['href'])
+            print(a.text)
+        #print(soup.find_all('a')[14].string)
+        
+        #nameSet=soup.find_all('a')
+        #print(nameSet)
+
         stateCode = 1
         return
+
     if videoTitle[27].string == "tt-01sd3" :
         print('-! ! ! ! ! ! ! ! ! ! ! ! ! ! !')
         print("-查询失败:"+frontname+"是错误的番号，请手动处理")
@@ -130,7 +143,7 @@ print("-耗    时:{:.2f}秒".format(ctcEnd-ctcStart))
 '''
 
 
-'''
+
 for fileName in fileList:
     frontName=os.path.splitext(fileName)[0]
     #print(frontName)
@@ -145,4 +158,3 @@ for fileName in fileList:
         downloadImage(videoTitle[27].string,pic.get('src'))
     ctcEnd=time.time()
     print("-耗    时:{:.2f}秒".format(ctcEnd-ctcStart))
-'''

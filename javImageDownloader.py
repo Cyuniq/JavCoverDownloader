@@ -5,65 +5,62 @@ import re
 import os   #用于读写文件操作
 import time #用于计算运行时间
 
-#从网页抓取指定信息
-def getInfo(frontname):
-    global headers
-    #网站需要挂代理
-    global proxies
-    #mainUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?keyword="+frontname
-    #切换至列表模式搜索地址，便于查找结果
-    mainUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?list&keyword="+frontname
-    response = requests.get(mainUrl,proxies = proxies, headers = headers)
 
-    soup = BeautifulSoup(response.text,'lxml')
-    global stateCode
+def getWebpage(url):
+    headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko"}
+    proxyProtocol = 'socks5'
+    proxyHost     = '127.0.0.1'
+    proxyPort     = '10808'
+    proxies = {
+    'http':  proxyProtocol+'://'+proxyHost+':'+proxyPort,
+    'https': proxyProtocol+'://'+proxyHost+':'+proxyPort,
+}
+    response = requests.get(url, proxies=proxies, headers=headers,timeout=10)
+    return response
+
+
+def searchInfo(url,frontname):
+    #soup = getWebpage(url)
+    soup = BeautifulSoup(getWebpage(url).text,'lxml')
     global videoTitle
-    videoTitle = soup.find_all(re.compile("a"),limit=28)
-
+    frontname=frontname.upper()
+    print(frontname)
     if soup.find_all('a')[14].string == "缩图模式" :
-        print('-! ! ! ! ! ! ! ! ! ! ! ! ! ! !')
-        print("-查询成功:"+frontname+"存在多个返回结果，请手动处理")
-        #print(soup.prettify())
-        #print(soup.find_all('a'))
-        #for a in soup.find_all('a'):
-        for a in soup.select('a[href][title]'):
-            print(a['href'])
-            print(a.text)
-        #print(soup.find_all('a')[14].string)
-        
-        #nameSet=soup.find_all('a')
-        #print(nameSet)
+        if len(soup.find_all('span')) == 0:
+            print("-查询成功:"+frontname+"存在多个返回结果，已选择第一个匹配项")
+            for a in soup.select('a[href][title]'):
+                if a.text[:a.text.index(' ')] == strName(frontname):
+                    videoTitle = a.text
+                    print(videoTitle)
+                    #print(a['href'][1:])
+                    firstMatchUrl='https://www.javlibrary.com/cn'+a['href'][1:]
+                    print(firstMatchUrl)
+                    break #找到第一个匹配项后停止
+            soup = searchInfo(firstMatchUrl,frontname)
+            return soup
+        if soup.find_all('span') != 0 :
+            videoTitle = "无查询结果"
+            print("-查询失败:'"+frontname+"'搜寻没有结果。")
+            return soup            
+            #return getWebpage(firstMatchUrl)
 
-        stateCode = 1
-        return
-
-    if videoTitle[27].string == "tt-01sd3" :
-        print('-! ! ! ! ! ! ! ! ! ! ! ! ! ! !')
-        print("-查询失败:"+frontname+"是错误的番号，请手动处理")
-        stateCode = 2
-        return
-    else:
-        global pic
-        stateCode = 0
+    if frontname == soup.find_all('td')[8].string:
+        videoTitle = soup.find_all("a")[14].string
         try:
-            print("-查询成功:"+frontname)
-            pic = soup.find('img',id="video_jacket_img")
+            print("-查询成功:"+frontname+"查询到匹配结果")
             #print(pic.get('src'))
         except Exception as e:
             print(e)
+        return soup
 
 def downloadImage(name,url):
-    global headers
-    global proxies
     if url[0:6] == "https:":
         jpgUrl=str(url)
     else :
         jpgUrl="https:"+str(url)
     jpgName=str(name)+".jpg"
-    
     try:
-        req = requests.get(jpgUrl, timeout=10)
-            #print("正在从"+fileurl+"下载")
+        req = getWebpage(jpgUrl)
         if req.status_code != 200:
             print('-下载异常')
             return
@@ -92,57 +89,47 @@ def strName(name):
     name=name.replace('ch','')
     name=name.replace('jav20s8.com@','')
     name=name.replace('hhd800.com@','')
-    
     name=name.upper()
     return name
 
 
 
 
-#全局变量部分
-
-#状态码
-# 0-状态正常 1-多个返回结果 2-不存在搜索结果
-stateCode = 0 
-
-#代理配置
-proxyProtocol = 'socks5'
-proxyHost     = '127.0.0.1'
-proxyPort     = '10808'
-proxies = {
-    'http':  proxyProtocol+'://'+proxyHost+':'+proxyPort,
-    'https': proxyProtocol+'://'+proxyHost+':'+proxyPort,
-}
-
-headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko"}
 
 
 
-#获取当前文件夹路径
-path=os.getcwd()
-#获取当前目录下文件列表
-fileList=os.listdir(path) 
 
 '''
 #####测试用代码块#####
 fileName="tek-077-C.mp4"
-print(strName(fileName))
+fileName="rki-111-C.mp4"
+fileName="测试.mp4"
 frontName=os.path.splitext(fileName)[0]
-strfrontName=strName(frontName)
 #print(frontName)
 backNmae=os.path.splitext(fileName)[1]
 #print(backNmae)
 ctcStart=time.time()
+mainSearchUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?list&keyword="+strName(frontName)
 print('------------------------------')
-getInfo(strfrontName)
-if stateCode == 0 :
-    downloadImage(videoTitle[27].string,pic.get('src'))
+print("-识别番号:"+strName(frontName))
+searchResult=searchInfo(mainSearchUrl,strName(frontName))
+coverSoup=searchResult.find('img',id="video_jacket_img")
+if coverSoup != None:
+    downloadImage(videoTitle,coverSoup.get('src'))
 ctcEnd=time.time()
 print("-耗    时:{:.2f}秒".format(ctcEnd-ctcStart))
 ####################
 '''
 
 
+#状态码
+# 0-状态正常 1-多个返回结果 2-不存在搜索结果
+stateCode = 0 
+
+#获取当前文件夹路径
+path=os.getcwd()
+#获取当前目录下文件列表
+fileList=os.listdir(path) 
 
 for fileName in fileList:
     frontName=os.path.splitext(fileName)[0]
@@ -150,11 +137,30 @@ for fileName in fileList:
     backNmae=os.path.splitext(fileName)[1]
     #print(backNmae)
     ctcStart=time.time()
+    mainSearchUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?list&keyword="+strName(frontName)
     print('------------------------------')
-    strfrontName=strName(frontName)
-    print('-识别番号:'+strfrontName)
-    getInfo(strfrontName)
-    if stateCode == 0 :
-        downloadImage(videoTitle[27].string,pic.get('src'))
+    print("-识别番号:"+strName(frontName))
+    searchResult=searchInfo(mainSearchUrl,strName(frontName))
+    coverSoup=searchResult.find('img',id="video_jacket_img")
+    if coverSoup != None:
+        print(videoTitle)
+        downloadImage(videoTitle,coverSoup.get('src'))
     ctcEnd=time.time()
     print("-耗    时:{:.2f}秒".format(ctcEnd-ctcStart))
+
+
+
+'''
+        if soup.find_all('span') != None:
+            if soup.find_all('span')[0].string == "tt":
+                videoTitle = "无查询结果"
+                print("-查询失败:'"+frontname+"'搜寻没有结果。")
+                return soup
+
+        if soup.find_all('td') != None:
+            if soup.find_all('td')[11].string == "你所输入的搜寻字串是无效的。请变更搜寻字串。":
+                videoTitle = "无查询结果"
+                print("-查询失败:'"+frontname+"'是无效的搜寻字串，请手动处理")
+                return soup
+'''
+

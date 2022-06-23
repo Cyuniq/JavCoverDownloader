@@ -91,6 +91,18 @@ def strName(name):
     name=name.upper()
     return name
 
+def renameFile(path,srcname,dstname):
+    srcpathNname=path+'\\'+srcname
+    print(srcpathNname)
+    dstpathNname=path+'\\'+dstname+os.path.splitext(srcname)[1]
+    print(dstpathNname)
+    writeLog(srcname+'--->'+dstname+os.path.splitext(srcname)[1])
+    os.rename(srcpathNname,dstpathNname)
+
+def writeLog(log):
+    path=os.getcwd()
+    with open(path+'\\log.txt','a',encoding='utf-8') as f:
+        f.write(log+'\n')
 
 
 
@@ -140,22 +152,7 @@ for fileName in fileList:
     if coverSoup != None:
         print(videoTitle)
         downloadImage(videoTitle,coverSoup.get('src'))
+        renameFile(path,fileName,videoTitle)
     ctcEnd=time.time()
     print("-耗    时:{:.2f}秒".format(ctcEnd-ctcStart))
-
-
-
-'''
-        if soup.find_all('span') != None:
-            if soup.find_all('span')[0].string == "tt":
-                videoTitle = "无查询结果"
-                print("-查询失败:'"+frontname+"'搜寻没有结果。")
-                return soup
-
-        if soup.find_all('td') != None:
-            if soup.find_all('td')[11].string == "你所输入的搜寻字串是无效的。请变更搜寻字串。":
-                videoTitle = "无查询结果"
-                print("-查询失败:'"+frontname+"'是无效的搜寻字串，请手动处理")
-                return soup
-'''
 

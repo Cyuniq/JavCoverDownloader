@@ -24,7 +24,6 @@ def searchInfo(url,frontname):
     soup = BeautifulSoup(getWebpage(url).text,'lxml')
     global videoTitle
     frontname=frontname.upper()
-    print(frontname)
     if soup.find_all('a')[14].string == "缩图模式" :
         if len(soup.find_all('span')) == 0:
             print("-查询成功:"+frontname+"存在多个返回结果，已选择第一个匹配项")
@@ -38,7 +37,7 @@ def searchInfo(url,frontname):
                     break #找到第一个匹配项后停止
             soup = searchInfo(firstMatchUrl,frontname)
             return soup
-        if soup.find_all('span') != 0 :
+        if len(soup.find_all('span') )!= 0 :
             videoTitle = "无查询结果"
             print("-查询失败:'"+frontname+"'搜寻没有结果。")
             return soup            
@@ -91,10 +90,6 @@ def strName(name):
     name=name.replace('hhd800.com@','')
     name=name.upper()
     return name
-
-
-
-
 
 
 

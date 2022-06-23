@@ -23,18 +23,20 @@ def searchInfo(url,frontname):
     #soup = getWebpage(url)
     soup = BeautifulSoup(getWebpage(url).text,'lxml')
     global videoTitle
-    frontname=frontname.upper()
+    print(frontname)
+    #frontname=frontname.upper()
     if soup.find_all('a')[14].string == "缩图模式" :
         if len(soup.find_all('span')) == 0:
-            print("-查询成功:"+frontname+"存在多个返回结果，已选择第一个匹配项")
             for a in soup.select('a[href][title]'):
-                if a.text[:a.text.index(' ')] == strName(frontname):
+                #if a.text[:a.text.index(' ')] == strName(frontname):
+                if a.text[:a.text.index(' ')] == frontname:
                     videoTitle = a.text
                     print(videoTitle)
                     #print(a['href'][1:])
                     firstMatchUrl='https://www.javlibrary.com/cn'+a['href'][1:]
                     print(firstMatchUrl)
                     break #找到第一个匹配项后停止
+            print("-查询成功:"+frontname+"存在多个返回结果，已选择第一个匹配项")
             soup = searchInfo(firstMatchUrl,frontname)
             return soup
         if len(soup.find_all('span') )!= 0 :
@@ -88,6 +90,10 @@ def strName(name):
     name=name.replace('ch','')
     name=name.replace('jav20s8.com@','')
     name=name.replace('hhd800.com@','')
+    if name.find(' ') != '-1':
+        print(name.find(' '))
+        name=name[0:name.find(' ')]
+        print(name+'|')
     name=name.upper()
     return name
 
@@ -104,6 +110,11 @@ def writeLog(log):
     with open(path+'\\log.txt','a',encoding='utf-8') as f:
         f.write(log+'\n')
 
+def ifMedia(name):
+    extension=[".mp4",".mkv"]
+    for exten in extension:
+        if name == exten:
+            return 1
 
 
 '''
@@ -136,7 +147,16 @@ stateCode = 0
 #获取当前文件夹路径
 path=os.getcwd()
 #获取当前目录下文件列表
-fileList=os.listdir(path) 
+
+#fileList=os.listdir(path)
+fileList=[]
+for file in os.listdir(path):
+    #print(os.path.splitext(file)[1])
+    #print(ifMedia(os.path.splitext(file)[1]))
+    if ifMedia(os.path.splitext(file)[1]) == 1:
+        fileList.append(file)
+print(fileList)
+
 
 for fileName in fileList:
     frontName=os.path.splitext(fileName)[0]
@@ -151,8 +171,9 @@ for fileName in fileList:
     coverSoup=searchResult.find('img',id="video_jacket_img")
     if coverSoup != None:
         print(videoTitle)
-        downloadImage(videoTitle,coverSoup.get('src'))
-        renameFile(path,fileName,videoTitle)
+        if videoTitle != fileName:
+            downloadImage(videoTitle,coverSoup.get('src'))
+            renameFile(path,fileName,videoTitle)
     ctcEnd=time.time()
     print("-耗    时:{:.2f}秒".format(ctcEnd-ctcStart))
 

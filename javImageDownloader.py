@@ -20,19 +20,15 @@ def getWebpage(url):
 
 
 def searchInfo(url,frontname):
-    #soup = getWebpage(url)
     soup = BeautifulSoup(getWebpage(url).text,'lxml')
     global videoTitle
     print(frontname)
-    #frontname=frontname.upper()
     if soup.find_all('a')[14].string == "缩图模式" :
         if len(soup.find_all('span')) == 0:
             for a in soup.select('a[href][title]'):
-                #if a.text[:a.text.index(' ')] == strName(frontname):
                 if a.text[:a.text.index(' ')] == frontname:
                     videoTitle = a.text
                     print(videoTitle)
-                    #print(a['href'][1:])
                     firstMatchUrl='https://www.javlibrary.com/cn'+a['href'][1:]
                     print(firstMatchUrl)
                     break #找到第一个匹配项后停止
@@ -43,13 +39,11 @@ def searchInfo(url,frontname):
             videoTitle = "无查询结果"
             print("-查询失败:'"+frontname+"'搜寻没有结果。")
             return soup            
-            #return getWebpage(firstMatchUrl)
 
     if frontname == soup.find_all('td')[8].string:
         videoTitle = soup.find_all("a")[14].string
         try:
             print("-查询成功:"+frontname+"查询到匹配结果")
-            #print(pic.get('src'))
         except Exception as e:
             print(e)
         return soup
@@ -70,10 +64,8 @@ def downloadImage(name,url):
                 print('-封面存在，跳过下载')
             if (os.path.exists(jpgName)==False):    
                 with open(jpgName, 'wb') as f:
-                    #req.content为获取html的内容
                     f.write(req.content)
                     print('-下载成功:'+jpgName[:48]+(jpgName[48:] and  '...'))
-                    #print('-下载成功:'+jpgName)
         except Exception as e:
             print(e)
 
@@ -91,9 +83,7 @@ def strName(name):
     name=name.replace('jav20s8.com@','')
     name=name.replace('hhd800.com@','')
     if name.find(' ') != '-1':
-        print(name.find(' '))
         name=name[0:name.find(' ')]
-        print(name+'|')
     name=name.upper()
     return name
 
@@ -160,9 +150,7 @@ print(fileList)
 
 for fileName in fileList:
     frontName=os.path.splitext(fileName)[0]
-    #print(frontName)
     backNmae=os.path.splitext(fileName)[1]
-    #print(backNmae)
     ctcStart=time.time()
     mainSearchUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?list&keyword="+strName(frontName)
     print('------------------------------')

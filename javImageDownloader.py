@@ -82,7 +82,7 @@ def strName(name):
     name=name.replace('ch','')
     name=name.replace('jav20s8.com@','')
     name=name.replace('hhd800.com@','')
-    if name.find(' ') != '-1':
+    if  not name.find(' '):
         name=name[0:name.find(' ')]
     name=name.upper()
     return name
@@ -154,6 +154,7 @@ for fileName in fileList:
     ctcStart=time.time()
     mainSearchUrl="https://www.javlibrary.com/cn/vl_searchbyid.php?list&keyword="+strName(frontName)
     print('------------------------------')
+    print(frontName)
     print("-识别番号:"+strName(frontName))
     searchResult=searchInfo(mainSearchUrl,strName(frontName))
     coverSoup=searchResult.find('img',id="video_jacket_img")

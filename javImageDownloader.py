@@ -1,7 +1,6 @@
 #version:0.1.2
 import  requests
-from bs4 import BeautifulSoup
-import re   
+from bs4 import BeautifulSoup  
 import os   #用于读写文件操作
 import time #用于计算运行时间
 

@@ -82,7 +82,7 @@ def strName(name):
     name=name.replace('ch','')
     name=name.replace('jav20s8.com@','')
     name=name.replace('hhd800.com@','')
-    if  not name.find(' '):
+    if name.find(' ') > -1:
         name=name[0:name.find(' ')]
     name=name.upper()
     return name

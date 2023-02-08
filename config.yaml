@@ -1,0 +1,5 @@
+proxy : {
+  proxyProtocol : 'socks5',
+  proxyHost     : '127.0.0.1',
+  proxyPort     : '10808'
+}

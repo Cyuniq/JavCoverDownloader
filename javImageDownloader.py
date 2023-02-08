@@ -3,13 +3,19 @@ import  requests
 from bs4 import BeautifulSoup  
 import os   #用于读写文件操作
 import time #用于计算运行时间
+import yaml #用于读取配置文件
 
+def getConfig():
+    file=os.getcwd()+'\config.yaml'
 
 def getWebpage(url):
     headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko"}
+    
     proxyProtocol = 'socks5'
     proxyHost     = '127.0.0.1'
     proxyPort     = '10808'
+
+    
     proxies = {
     'http':  proxyProtocol+'://'+proxyHost+':'+proxyPort,
     'https': proxyProtocol+'://'+proxyHost+':'+proxyPort,

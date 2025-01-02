@@ -11,7 +11,7 @@ import time #用于计算运行时间
 import random #随即秒数，模拟真实用户操作
 import re #正则表达式
 
-work_directory = "X:\working"
+work_directory = "X:\\20240715\Downloads"
 
 #从网页查询信息
 def get_jav_url(url):
@@ -57,15 +57,12 @@ def strName(name):
         name = name.replace(pattern, '')
     name = name.replace(' ', '-')
     name = name.split(' ')[0].upper()
-    #return name
-
-    #pattern = r'^[A-Za-z]{3,4}-\d{3,4}$'
     pattern = r'([A-Z]+[-\s]?\d+)'
     match = re.search(pattern, name)
 
-    print('处理后名字:'+match.group(0))
-    # 检查是否符合模式
+    # 检查是否符合番号命名规则
     if match:
+        print('处理后名字:'+match.group(0))
         return match.group(0)
     else:
         return None
@@ -135,13 +132,6 @@ def is_valid_filename(filename):
     return True
 
 def append_log_to_file(content):
-    """
-    将字符串内容追加到文本文件
-
-    :param file_path: 文件的路径（包括文件名）
-    :param content: 要追加到文件的字符串内容
-    :return: None
-    """
     try:
         with open('./log.txt', 'a', encoding='utf-8') as file:
             file.write(content)
@@ -191,30 +181,17 @@ def process_files(file_list):
 
 proxy = "http://127.0.0.1:7897"
 
-proxies = {
-'http':  'http://127.0.0.1:7897',
-'https': 'http://127.0.0.1:7897',
-}
-
-#current_directory = os.getcwd()
-current_directory = work_directory
 chrome_options = Options()
 chrome_options.add_argument(f'--proxy-server={proxy}')
 chrome_options.add_experimental_option('prefs', {
-    "download.default_directory": current_directory,  # 设置下载路径为当前目录
+    "download.default_directory": work_directory,  # 设置下载路径为当前目录
 })
 
-
-
-#chrome_options.add_argument(r"user-data-dir=C:\Users\chenrunqiang\AppData\Local\Google\Chrome\User Data")
-#chrome_options.binary_location = './chrome-headless-shell-win64/chrome-headless-shell.exe'
 chrome_options.binary_location = './chrome-win64/chrome.exe'
 chrome_driver_path = "./chromedriver.exe"
 chrome_service = Service(chrome_driver_path)
 chrome_service.start()
 driver = webdriver.Chrome(options=chrome_options,service=chrome_service)
-
-
 
 chrome_version = driver.capabilities['browserVersion']
 print("Chrome浏览器版本:", chrome_version)
@@ -226,12 +203,9 @@ print("path:"+path)
 #获取当前目录下文件列表
 file_list=[]
 for file in os.listdir(path):
-    #print(os.path.splitext(file)[1])
-    #print(ifMedia(os.path.splitext(file)[1]))
     if ifMedia(os.path.splitext(file)[1]) == 1:
         file_list.append(file)
 print(file_list)
-
 
 process_files(file_list)
 

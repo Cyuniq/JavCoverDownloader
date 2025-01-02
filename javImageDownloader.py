@@ -11,15 +11,16 @@ import time #用于计算运行时间
 import random #随即秒数，模拟真实用户操作
 import re #正则表达式
 
-work_directory = "X:\\20240715\Downloads"
+work_directory = "Z:\手动"
+
 
 #从网页查询信息
 def get_jav_url(url):
+    global bigImage_url
     try:
         driver.get(url)
         driver.set_page_load_timeout(10)
         if driver.find_element(By.CSS_SELECTOR,'h4') != "404 Page Not Found!":
-            #print("页面内容:", driver.page_source[:2000])
             try:
                 search_results = driver.find_element(By.CSS_SELECTOR, "h3")
                 title_name = search_results.text
@@ -28,8 +29,7 @@ def get_jav_url(url):
                 print("搜索结果元素未找到")
             try:
                 bigImage_url = driver.find_element(By.CLASS_NAME, "bigImage").get_attribute('href')
-                download_and_rename_image(bigImage_url, search_results.text)
-                #print(bigImage)
+                
             except NoSuchElementException:
                 print("搜索结果元素未找到")
             return title_name
@@ -76,11 +76,6 @@ def download_and_rename_image(image_url, new_file_name):
     # 构建新的文件名
     new_file_name_with_extension = new_file_name + file_extension
 
-    if is_valid_filename(new_file_name_with_extension):
-        print("文件名合法:"+new_file_name_with_extension)
-    else:
-        new_file_name_with_extension = sanitize_filename(new_file_name_with_extension)
-        print(f"文件名不合法，修改后: {new_file_name_with_extension}")
     if os.path.exists(work_directory+"\\"+new_file_name_with_extension):
         print('文件已存在，跳过下载:'+new_file_name_with_extension)
     else:
@@ -100,7 +95,7 @@ def download_and_rename_image(image_url, new_file_name):
         driver.execute_script(script,new_file_name_with_extension)
         append_log_to_file('封面文件下载:'+new_file_name_with_extension+'\n')
         # 等待图像下载
-        time.sleep(5)  # 根据实际下载时间调整等待时间
+        time.sleep(1)  # 根据实际下载时间调整等待时间
 
 
 
@@ -118,18 +113,6 @@ def sanitize_filename(filename):
     sanitized = sanitized.rstrip(' .')
 
     return sanitized
-
-def is_valid_filename(filename):
-    # Windows 文件名规则
-    windows_invalid_chars = r'[<>:"/\\|?*]'
-    if re.search(windows_invalid_chars, filename) or filename.endswith((' ', '.')):
-        return False
-
-    # Linux 文件名规则
-    if '/' in filename:
-        return False
-
-    return True
 
 def append_log_to_file(content):
     try:
@@ -155,20 +138,47 @@ def process_files(file_list):
         print(f"文件名: {base_name}")
         print(f"-识别番号: {strName(base_name)}")
 
-        title_name=get_jav_url(search_url)
+        title_name=sanitize_filename(get_jav_url(search_url))
         print('标题名:'+title_name)
         if title_name not in ['404 Page Not Found!', 'Page load timeout', 'WebDriver error', 'Unexpected error']:
             new_file_name = title_name+extention
             if os.path.exists(new_file_name):
                 print('文件存在，不处理')
             else:
-                os.rename(work_directory+"\\"+file_name, work_directory+"\\"+new_file_name)
-                append_log_to_file('原文件:'+file_name+'\n'+'命名后:'+new_file_name+'\n')
+                try:
+                    # 尝试使用原始文件名重命名
+                    os.rename(work_directory + "\\" + file_name, work_directory + "\\" + new_file_name)
+                    append_log_to_file('原文件:' + file_name + '\n' + '命名后:' + new_file_name + '\n')
+                    download_and_rename_image(bigImage_url, title_name)
+                except OSError as e:
+                    print(f"无法重命名文件 {file_name} 到 {new_file_name}: {e}")
+                    append_log_to_file(f'无法重命名文件 {file_name} 到 {new_file_name}: {e}\n')
+                    
+                    # 如果失败，截取 title_name 的前后 20 个字节并添加 '......'
+                    truncated_name = title_name[:20] + "......" + title_name[-20:] if len(title_name) > 40 else title_name
+                    new_file_name = truncated_name + extention
+                    
+                    print(f"尝试重命名为: {new_file_name}")
+                    
+                    try:
+                        # 使用截取后的文件名重新命名
+                        os.rename(work_directory + "\\" + file_name, work_directory + "\\" + new_file_name)
+                        download_and_rename_image(bigImage_url, truncated_name)
+                        append_log_to_file('原文件:' + file_name + '\n' + '命名后:' + new_file_name + '\n')
+                    except OSError as e:
+                        print(f"无法重命名文件 {file_name} 到 {new_file_name}: {e}")
+                        append_log_to_file(f'无法重命名文件 {file_name} 到 {new_file_name}: {e}\n')
+                        print("跳过该文件，继续下一个文件")
+
+                #os.rename(work_directory+"\\"+file_name, work_directory+"\\"+new_file_name)
+                #append_log_to_file('原文件:'+file_name+'\n'+'命名后:'+new_file_name+'\n')
+
         else:
             print('未找到结果，请手动处理')
             append_log_to_file('文件:'+file_name+'\n'+'未搜索到'+'\n')
+        
         # 随机等待时间
-        wait_time = random.uniform(1, 10)
+        wait_time = random.uniform(1, 5)
         print(f"等待 {wait_time:.2f} 秒")
         time.sleep(wait_time)
         print("暂停结束，继续执行")
@@ -208,7 +218,7 @@ for file in os.listdir(path):
 print(file_list)
 
 process_files(file_list)
-
+time.sleep(10)
 
 driver.quit()
 keyboard.read_key()

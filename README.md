@@ -7,8 +7,6 @@
 下载专辑封面到本地并按照标题重命名 <br>
 输出文件名修改日志 <br>
 
-开发环境：Python 3.10.5 <br>
-依赖：requests、BeautifulSoup4 <br>
 数据源：https://www.javbus.com/ <br>
 
 ## 使用方法
@@ -16,7 +14,6 @@
 
 自行下载对应浏览器的驱动，示例使用chrome，需搭配下载chromedriver使用。
 
-`pip install -r requirements.txt`
 
 数据源网站因大家都懂的原因不能直接访问，默认在方法getWebpage中配置了代理为'socks5://127.0.0.1:7897'，自行修改即可 <br>
 
